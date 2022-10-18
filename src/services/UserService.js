@@ -1,4 +1,3 @@
-const HTTP_STATUS = require('../config/constants/httpStatus');
 const UserRepository = require('../repositories/UserRepository');
 
 class UserService {
