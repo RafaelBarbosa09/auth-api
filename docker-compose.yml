@@ -1,0 +1,21 @@
+version: '3'
+services:
+
+  auth-api:
+    build: './'
+    container_name: auth-api
+    environment:
+      - PORT=3000
+    ports:
+      - 3000:3000
+
+  auth-db:
+    image: postgres:11
+    container_name: auth-db
+    restart: always
+    environment:
+      - POSTGRES_DB=auth-db
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=123456
+    ports:
+      - 5433:5432
