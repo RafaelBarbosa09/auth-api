@@ -1,39 +1,47 @@
 const HTTP_STATUS = require('../config/constants/httpStatus');
 const UserRepository = require('../repositories/UserRepository');
-const UserException = require('../exceptions/UserException');
 
 class UserService {
     async findByEmail(email) {
         try {
             const user = await UserRepository.findByEmail(email);
-            this.validateUserNoteFound(user);
-            delete user.password;
+            this.validateUserNotFound(user);
+            this.deleteDataValueProperty(user, 'password');
 
-            return {
-                status: HTTP_STATUS.OK,
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    createdAt: user.createdAt,
-                    updatedAt: user.updatedAt
-                }
-            }
+            return user
         } catch (err) {
             return {
-                status: err.status ? err.status : HTTP_STATUS.INTERNAL_SERVER_ERROR
+                message: err.message,
             };
         }
     }
 
-    async validadeUserExists(email) {
-        const user = await UserRepository.findByEmail(email);
-        if (user) throw new UserException(HTTP_STATUS.BAD_REQUEST, 'User already exists');
+    async store(user) {
+        try {
+            await this.validadeUserExists(user.email);
+            const newUser = await UserRepository.store(user);
+            this.deleteDataValueProperty(newUser, 'password');
+
+            return newUser;
+        } catch (err) {
+            return {
+                message: err.message,
+            };
+        }
     }
 
-    validateUserNoteFound(user) {
+    deleteDataValueProperty(object, property) {
+        delete object.dataValues[property];
+    }
+
+    async validadeUserExists(email) {
+        const user = await UserRepository.findByEmail(email);
+        if (user) throw new Error('User already exists');
+    }
+
+    validateUserNotFound(user) {
         if (!user) {
-            throw new UserException(HTTP_STATUS.NOT_FOUND, 'User not found');
+            throw new Error('User not found');
         }
     }
 }
