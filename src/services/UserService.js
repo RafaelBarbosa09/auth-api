@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+
 const UserRepository = require('../repositories/UserRepository');
 
 class UserService {
@@ -18,6 +20,8 @@ class UserService {
     async store(user) {
         try {
             await this.validadeUserExists(user.email);
+
+            user.password = await this.encryptPassword(user.password);
             const newUser = await UserRepository.store(user);
             this.deleteDataValueProperty(newUser, 'password');
 
@@ -27,6 +31,10 @@ class UserService {
                 message: err.message,
             };
         }
+    }
+
+    async encryptPassword(password) {
+        return await bcrypt.hash(password, 10);
     }
 
     deleteDataValueProperty(object, property) {
